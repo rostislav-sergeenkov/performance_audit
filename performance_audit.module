@@ -1,0 +1,82 @@
+<?php
+
+/**
+ * @file
+ * performance_audit.module
+ */
+
+// Returns configuration options related to performance.
+define('PERFORMANCE_AUDIT_PHP_INI', 'php_ini');
+// Returns array with the names of all PHP modules compiled and loaded
+define('PERFORMANCE_AUDIT_PHP_EXTENSIONS', 'php_extensions');
+// Return information about the current PHP version.
+define('PERFORMANCE_AUDIT_PHP_VERSION', 'php_version');
+// Returns information about defined PHP constants.
+define('PERFORMANCE_AUDIT_PHP_CONSTANTS', 'php_constants');
+// Returns information about the operating system PHP is running on.
+define('PERFORMANCE_AUDIT_OS', 'os');
+// Returns a list of loaded Apache modules.
+define('PERFORMANCE_AUDIT_APACHE_MODULES', 'apache_modules');
+// Returns information about environment variables.
+define('PERFORMANCE_AUDIT_ENV', 'env');
+// Returns information about server configuration.
+define('PERFORMANCE_AUDIT_SERVER', 'server');
+// Returns a list of registered streams.
+define('PERFORMANCE_AUDIT_STREAM_WRAPPERS', 'stream_wrappers');
+
+// Loads required classes.
+module_load_include('php', 'performance_audit', 'classes/PerformanceAuditPHPCollector');
+module_load_include('php', 'performance_audit', 'classes/PerformanceAuditPHPAnalyzer');
+
+/**
+ * Implements hook_permission().
+ */
+function performance_audit_permission() {
+  return array(
+    'view performance_audit info' => array(
+      'title' => t('View performance audit information'),
+      'description' => t('Access and view performance audit information.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function performance_audit_menu() {
+  return array(
+    'admin/reports/performance_audit' => array(
+      'title' => 'Performance audit report',
+      'description' => 'Performance audit report and recommendations.',
+      'page callback' => 'performance_audit_get_content',
+      'access arguments' => array('view performance_audit info'),
+      'file' => 'performance_audit.page.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function performance_audit_block_info() {
+  return array(
+    'performance_audit_php' => array(
+      'info' => t('Performance Audit [php]'),
+      'cache' => DRUPAL_NO_CACHE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function performance_audit_block_view($delta = 'performance_audit_php') {
+  module_load_include('inc', 'performance_audit', 'performance_audit.block.inc');
+
+  if ($delta == 'performance_audit_php') {
+    return array(
+      'subject' => t('Performance Audit [php]'),
+      'content' => performance_audit_block_get_content($delta),
+    );
+  };
+}
