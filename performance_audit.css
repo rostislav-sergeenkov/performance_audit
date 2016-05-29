@@ -1,0 +1,29 @@
+table.performance_audit_table .status td:first-child {
+  background: #f8fff0 url('images/message-24-ok.png') 5px center no-repeat;
+  padding: 4px 9px 4px 36px;
+  font-weight: bold;
+}
+
+table.performance_audit_table .warning td:first-child {
+  background: #fffce5 url('images/message-24-warning.png') 5px center no-repeat;
+  padding: 4px 9px 4px 36px;
+  font-weight: bold;
+}
+
+table.performance_audit_table tr.error td:first-child {
+  background: #fef5f1 url('images/message-24-error.png') 5px center no-repeat;
+  padding: 4px 9px 4px 36px;
+  font-weight: bold;
+}
+
+table.performance_audit_table .status td {
+  background-color: #f8fff0;
+}
+
+table.performance_audit_table .warning td {
+  background-color: #fffce5;
+}
+
+table.performance_audit_table .error td {
+  background-color: #fef5f1;
+}

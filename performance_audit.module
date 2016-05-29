@@ -28,6 +28,8 @@ define('PERFORMANCE_AUDIT_STREAM_WRAPPERS', 'stream_wrappers');
 module_load_include('php', 'performance_audit', 'classes/PerformanceAuditPHPCollector');
 module_load_include('php', 'performance_audit', 'classes/PerformanceAuditPHPAnalyzer');
 
+// @todo create admin page to enable certain sections for analysis.
+
 /**
  * Implements hook_permission().
  */
@@ -53,6 +55,66 @@ function performance_audit_menu() {
       'file' => 'performance_audit.page.inc',
     ),
   );
+}
+
+/**
+ * Implements hook_theme().
+ */
+function performance_audit_theme($existing, $type, $theme, $path) {
+  return array(
+    'performance_audit_page' => array(
+      'variables' => array('data' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implements hook_requirements().
+ * @todo check for appropriate permissions.
+ */
+function performance_audit_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break during installation.
+  $t = get_t();
+
+  if ($phase == 'runtime') {
+    // @todo implement admin configuration to check some types on the fly and provide the report.
+    $errors = array();
+    $warnings = array();
+    $requirements['performance_audit'] = array(
+      'title' => $t('Performance Audit'),
+      'value' => t('No problems in PHP configuration were found.'),
+      'severity' => REQUIREMENT_OK,
+    );
+
+    $type = PERFORMANCE_AUDIT_PHP_INI;
+    $analyzer = new PerformanceAuditPHPAnalyzer($type);
+    $data = $analyzer->analyze();
+
+    foreach ($data['options'] as $option) {
+      if ($option['status'] == $analyzer::STATUS_ERROR) {
+        $errors[] = $option['name'];
+      }
+      elseif ($option['status'] == $analyzer::STATUS_WARNING) {
+        $warnings[] = $option['name'];
+      }
+    }
+
+    if (!empty($errors)) {
+      $requirements['performance_audit']['value'] = t('There is a !critical_problem in PHP configuration.',
+        array(
+          '!critical_problem' => l($t('critical problem'), 'admin/reports/performance_audit')));
+      $requirements['performance_audit']['severity'] = REQUIREMENT_ERROR;
+    }
+    elseif (!empty($warnings)) {
+      $requirements['performance_audit']['value'] = t('There is a !problem in PHP configuration.',
+        array(
+          '!problem' => l($t('problem'), 'admin/reports/performance_audit')));
+      $requirements['performance_audit']['severity'] = REQUIREMENT_WARNING;
+    }
+  }
+
+  return $requirements;
 }
 
 /**
